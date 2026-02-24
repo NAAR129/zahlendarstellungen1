@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mathe-Abenteuer</title>
+
+  <style>
+    /* ===== Grunddesign ===== */
+body{
+  font-family:"Comic Sans MS",sans-serif;
+  background:linear-gradient(135deg,#a1c4fd,#c2e9fb);
+  margin:0;
+  padding:20px;
+  text-align:center;
+  color:#333;
+}
+h1{font-size:2.6rem;margin:25px 0;color:#2c3e50;}
+
+button{
+  cursor:pointer;
+  border:none;
+  border-radius:20px;
+  font-weight:bold;
+  transition:0.2s;
+}
+button:active{transform:translateY(3px);}
+input{
+  font-size:1.8rem;
+  border:3px solid #555;
+  border-radius:15px;
+  padding:10px;
+  width:110px;
+  text-align:center;
+  margin:10px;
+}
+
+/* ===== Startmenü ===== */
+.modus-btn{
+  font-size:2rem;
+  padding:25px 50px;
+  margin:15px;
+  color:white;
+  box-shadow:0 6px rgba(0,0,0,0.2);
+}
+#modus1{background:#2ecc71;}
+#modus2{background:#3498db;}
+#modus3{background:#9b59b6;}
+
+.back-btn{
+  background:#34495e;
+  color:white;
+  font-size:1.4rem;
+  padding:10px 25px;
+  margin:15px;
+}
+
+.game-container{display:none;max-width:900px;margin:auto;}
+
+/* ===== Zehner / Hunderter ===== */
+.block-area{
+  display:flex;flex-wrap:wrap;gap:20px;justify-content:center;margin:30px 0;
+}
+.hunderter-tafel{
+  width:160px;height:160px;
+  display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(10,1fr);
+  gap:2px;background:#2ecc71;padding:5px;border-radius:10px;
+}
+.hunderter-tafel div{background:#a9dfbf;}
+.zehner-stange{display:flex;gap:2px;}
+.zehner-stange div{width:22px;height:22px;background:#e74c3c;}
+.einer{width:22px;height:22px;background:#3498db;border-radius:5px;}
+
+.correct{color:#27ae60;font-size:2rem;margin:20px 0;}
+.wrong{color:#e74c3c;font-size:2rem;margin:20px 0;}
+
+/* ===== Wortfarben ===== */
+.wort-h{color:#2ecc71;font-weight:bold;}
+.wort-z{color:#e74c3c;font-weight:bold;}
+.wort-e{color:#3498db;font-weight:bold;}
+.wort-und{color:#2c3e50;font-weight:bold;}
+
+/* ===== Geheimschrift ===== */
+#geschriebene-geheim{
+  font-size:3rem;margin:25px;min-height:80px;
+}
+.geheim-btn{
+  font-size:2.6rem;
+  padding:20px 40px;
+  border:none;border-radius:20px;
+  margin:10px;
+  color:white;
+}
+.g-gruen{background:#2ecc71;}
+.g-rot{background:#e74c3c;}
+.g-blau{background:#3498db;}
+.g-grau{background:#95a5a6;}
+
+/* ===== Animation Sterne ===== */
+@keyframes fall{
+  to{transform:translateY(110vh) rotate(720deg);opacity:0;}
+}
+  </style>
+
+  
+</head>
+<body>
+  <div id="start-screen">
+  <h1>🌟 Mathe-Abenteuer 🌟</h1>
+  <button class="modus-btn" id="modus1" onclick="starteSpiel(1)">Zehner ↔ Hunderter</button>
+  <button class="modus-btn" id="modus2" onclick="starteSpiel(2)">Zahlen lesen</button>
+  <button class="modus-btn" id="modus3" onclick="starteSpiel(3)">Geheimschrift</button>
+</div>
+
+<!-- ===== MODUS 1 ===== -->
+<div id="game1" class="game-container">
+  <button class="back-btn" onclick="zurueckZumStart()">← Zurück</button>
+  <h1>Wie viele Hunderter kannst du bauen und wie viele Zehner bleiben übrig?</h1>
+  <div id="blockArea" class="block-area"></div>
+
+  <div>
+    <label>Wie viele Hunderter?</label><input type="number" id="hunderter">
+    <label>wie viele Zehner bleiben übrig? </label><input type="number" id="zehner">
+  </div>
+
+  <button id="checkBtn1" onclick="pruefe(1)">Prüfen</button>
+  <button id="nextBtn1" onclick="naechsteAufgabe(1)">Weiter</button>
+  <div id="feedback1"></div>
+</div>
+
+<!-- ===== MODUS 2 ===== -->
+<div id="game2" class="game-container">
+  <button class="back-btn" onclick="zurueckZumStart()">← Zurück</button>
+  <h1>Zahlen lesen</h1>
+
+  <div id="zahl-wort" style="font-size:2.8rem;margin:30px 0;"></div>
+  <input type="number" id="zahl-eingabe">
+  <br>
+  <button id="checkBtn2" onclick="pruefe(2)">Prüfen</button>
+  <button id="nextBtn2" onclick="naechsteAufgabe(2)">Weiter</button>
+
+  <div id="feedback2"></div>
+  <div id="loesung2" style="font-size:2.4rem;margin-top:15px;"></div>
+</div>
+
+<!-- ===== MODUS 3 ===== -->
+<div id="game3" class="game-container">
+  <button class="back-btn" onclick="zurueckZumStart()">← Zurück</button>
+  <h1>Geheimschrift</h1>
+  <div id="zahl-normal" style="font-size:2.8rem;margin:15px;"></div>
+  <div id="geschriebene-geheim">...</div>
+
+  <div>
+    <button class="geheim-btn g-gruen" onclick="addSymbol('□')">□</button>
+    <button class="geheim-btn g-rot" onclick="addSymbol('|')">|</button>
+    <button class="geheim-btn g-blau" onclick="addSymbol('•')">•</button>
+    <button class="geheim-btn g-grau" onclick="loescheLetztes()">←</button>
+  </div>
+
+  <button id="checkBtn3" onclick="pruefe(3)">Prüfen</button>
+  <button id="nextBtn3" onclick="naechsteAufgabe(3)">Weiter</button>
+
+  <div id="feedback3"></div>
+</div>
+
+  <script>
+    /* ===== Daten ===== */
+let aufgaben1=[10,20,15,30,38,24,12,27,33,19];
+let aufgaben2=[
+  {wort:"dreihundertvierundfünfzig",zahl:354},
+  {wort:"zweihundertneununddreißig",zahl:239},
+  {wort:"einhundertsechsundzwanzig",zahl:126}
+];
+let aufgaben3=[132,205,341,87,419];
+
+let aktuell=[0,0,0];
+let aktuelleGeheimschrift="";
+
+/* ===== Utils ===== */
+function mischeArray(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+}
+function zurueckZumStart(){
+  document.querySelectorAll(".game-container").forEach(g=>g.style.display="none");
+  document.getElementById("start-screen").style.display="block";
+}
+
+/* ===== Start ===== */
+function starteSpiel(m){
+  document.getElementById("start-screen").style.display="none";
+  document.getElementById("game"+m).style.display="block";
+  if(m===1)mischeArray(aufgaben1);
+  if(m===2)mischeArray(aufgaben2);
+  if(m===3)mischeArray(aufgaben3);
+  ladeAufgabe(m);
+}
+
+/* ===== Aufgaben laden ===== */
+function ladeAufgabe(m){
+  document.getElementById("nextBtn"+m).disabled=true;
+
+  if(m===1){
+    let total=aufgaben1[aktuell[0]];
+    zeichneZehner(total);
+    document.getElementById("hunderter").value="";
+    document.getElementById("zehner").value="";
+    document.getElementById("feedback1").innerHTML="";
+  }
+
+  if(m===2){
+    let obj=aufgaben2[aktuell[1]];
+    document.getElementById("zahl-wort").textContent=obj.wort;
+    document.getElementById("zahl-eingabe").value="";
+    document.getElementById("feedback2").innerHTML="";
+    document.getElementById("loesung2").innerHTML="";
+  }
+
+  if(m===3){
+    document.getElementById("zahl-normal").textContent=aufgaben3[aktuell[2]];
+    aktuelleGeheimschrift="";
+    document.getElementById("geschriebene-geheim").innerHTML="...";
+    document.getElementById("feedback3").innerHTML="";
+  }
+}
+
+/* ===== Zehner/Hunderter zeichnen ===== */
+function zeichneZehner(n){
+  let area=document.getElementById("blockArea");
+  area.innerHTML="";
+  for(let i=0;i<n;i++){
+    let s=document.createElement("div");
+    s.className="zehner-stange";
+    for(let j=0;j<10;j++){s.appendChild(document.createElement("div"));}
+    area.appendChild(s);
+  }
+}
+
+/* ===== Prüfen ===== */
+function pruefe(m){
+
+  if(m===1){
+    let total=aufgaben1[aktuell[0]];
+    let h=parseInt(document.getElementById("hunderter").value)||0;
+    let z=parseInt(document.getElementById("zehner").value)||0;
+    let rh=Math.floor(total/10);
+    let rz=total%10;
+    let nurZ=(h===0&&z===total);
+    let normal=(h===rh&&z===rz);
+    if(normal||nurZ){
+      document.getElementById("feedback1").innerHTML="<div class='correct'>Richtig! 🌟</div>";
+      if(nurZ&&total>=10)
+        document.getElementById("feedback1").innerHTML+="<div style='font-size:1.2rem'>Tipp: "+total+" Zehner sind "+rh+" Hunderter und "+rz+" Zehner.</div>";
+      document.getElementById("nextBtn1").disabled=false;
+      feiereSieg();
+    }else{
+      document.getElementById("feedback1").innerHTML="<div class='wrong'>Fast!</div>";
+    }
+  }
+
+  if(m===2){
+    let obj=aufgaben2[aktuell[1]];
+    let eing=parseInt(document.getElementById("zahl-eingabe").value)||0;
+    if(eing===obj.zahl){
+      document.getElementById("feedback2").innerHTML="<div class='correct'>Richtig! 🌟</div>";
+      document.getElementById("nextBtn2").disabled=false;
+      feiereSieg();
+    }else{
+      document.getElementById("feedback2").innerHTML="<div class='wrong'>Fast!</div>";
+    }
+
+    // Wort farbig zerlegen
+    let wort=obj.wort;
+    let teile=wort.split("hundert");
+    let hTeil=teile[0]+"hundert";
+    let rest=teile[1]||"";
+    let eTeil="",zTeil="";
+    if(rest.includes("und")){
+      let p=rest.split("und");
+      eTeil=p[0];
+      zTeil=p[1];
+    }else{zTeil=rest;}
+    let farbig=`<span class='wort-h'>${hTeil}</span>`+
+      (eTeil?`<span class='wort-e'>${eTeil}</span><span class='wort-und'>und</span>`:"")+
+      (zTeil?`<span class='wort-z'>${zTeil}</span>`:"");
+    document.getElementById("loesung2").innerHTML=farbig;
+  }
+
+  if(m===3){
+    let zahl=aufgaben3[aktuell[2]];
+    let h=Math.floor(zahl/100);
+    let z=Math.floor((zahl%100)/10);
+    let e=zahl%10;
+    let clean=aktuelleGeheimschrift.replace(/[^□|•]/g,"");
+    let q=(clean.match(/□/g)||[]).length;
+    let s=(clean.match(/\|/g)||[]).length;
+    let p=(clean.match(/•/g)||[]).length;
+    if(q===h&&s===z&&p===e){
+      document.getElementById("feedback3").innerHTML="<div class='correct'>Richtig! 🌟</div>";
+      document.getElementById("nextBtn3").disabled=false;
+      feiereSieg();
+    }else{
+      document.getElementById("feedback3").innerHTML="<div class='wrong'>Fast!</div>";
+    }
+  }
+}
+
+/* ===== Weiter ===== */
+function naechsteAufgabe(m){
+  aktuell[m-1]++;
+  if(m===1&&aktuell[0]>=aufgaben1.length)aktuell[0]=0;
+  if(m===2&&aktuell[1]>=aufgaben2.length)aktuell[1]=0;
+  if(m===3&&aktuell[2]>=aufgaben3.length)aktuell[2]=0;
+  ladeAufgabe(m);
+}
+
+/* ===== Geheimschrift ===== */
+function addSymbol(s){
+  aktuelleGeheimschrift+=s;
+  let farbig=aktuelleGeheimschrift
+    .replace(/□/g,"<span style='color:#2ecc71'>□</span>")
+    .replace(/\|/g,"<span style='color:#e74c3c'>|</span>")
+    .replace(/•/g,"<span style='color:#3498db'>•</span>");
+  document.getElementById("geschriebene-geheim").innerHTML=farbig||"...";
+}
+function loescheLetztes(){
+  aktuelleGeheimschrift=aktuelleGeheimschrift.slice(0,-1);
+  addSymbol("");
+}
+
+/* ===== Sterneffekt ===== */
+function feiereSieg(){
+  const c=document.createElement("div");
+  c.style.position="fixed";
+  c.style.inset="0";
+  c.style.pointerEvents="none";
+  document.body.appendChild(c);
+  for(let i=0;i<60;i++){
+    let s=document.createElement("div");
+    s.innerHTML="★";
+    s.style.position="absolute";
+    s.style.left=Math.random()*100+"vw";
+    s.style.top="-40px";
+    s.style.fontSize="2rem";
+    s.style.color="gold";
+    s.style.animation="fall 3s linear forwards";
+    c.appendChild(s);
+  }
+  setTimeout(()=>c.remove(),3000);
+}
+  </script>
+</body>
+</html>
+
